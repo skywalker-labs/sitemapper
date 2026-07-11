@@ -367,15 +367,20 @@ test('LaravelSitemapAdapter cachedResponse() uses default content type for unkno
 });
 
 test('LaravelSitemapAdapter toResponse() aliases renderResponse()', function () {
-    $cache = new class implements \Illuminate\Contracts\Cache\Repository {};
-    $config = new class implements \Illuminate\Contracts\Config\Repository {};
-    $file = new class extends \Illuminate\Filesystem\Filesystem {};
+    $cache = new class implements \Illuminate\Contracts\Cache\Repository {
+    };
+    $config = new class implements \Illuminate\Contracts\Config\Repository {
+    };
+    $file = new class extends \Illuminate\Filesystem\Filesystem {
+    };
     $response = new class implements \Illuminate\Contracts\Routing\ResponseFactory {
-        public function make($content, $status = 200, array $headers = []) {
+        public function make($content, $status = 200, array $headers = [])
+        {
             return (object) ['headers' => $headers];
         }
     };
-    $view = new class implements \Illuminate\Contracts\View\Factory {};
+    $view = new class implements \Illuminate\Contracts\View\Factory {
+    };
 
     $adapter = new LaravelSitemapAdapter([], $cache, $config, $file, $response, $view);
     $result = $adapter->toResponse('xml');
@@ -384,14 +389,19 @@ test('LaravelSitemapAdapter toResponse() aliases renderResponse()', function () 
 });
 
 test('LaravelSitemapAdapter scanRoutes() skips if app not available', function () {
-    $cache = new class implements \Illuminate\Contracts\Cache\Repository {};
-    $config = new class implements \Illuminate\Contracts\Config\Repository {};
-    $file = new class extends \Illuminate\Filesystem\Filesystem {};
-    $response = new class implements \Illuminate\Contracts\Routing\ResponseFactory {};
-    $view = new class implements \Illuminate\Contracts\View\Factory {};
+    $cache = new class implements \Illuminate\Contracts\Cache\Repository {
+    };
+    $config = new class implements \Illuminate\Contracts\Config\Repository {
+    };
+    $file = new class extends \Illuminate\Filesystem\Filesystem {
+    };
+    $response = new class implements \Illuminate\Contracts\Routing\ResponseFactory {
+    };
+    $view = new class implements \Illuminate\Contracts\View\Factory {
+    };
 
     $adapter = new LaravelSitemapAdapter([], $cache, $config, $file, $response, $view);
-    
+
     // Test passes if it does not throw
     $adapter->scanRoutes('https://example.com');
     expect($adapter->getSitemap()->getModel()->getItems())->toBeEmpty();

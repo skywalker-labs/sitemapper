@@ -22,7 +22,7 @@ afterEach(function () {
 
 test('directory scanner finds files', function () {
     $sitemap = new Sitemap();
-    
+
     file_put_contents($this->tempDir . '/about.html', 'about');
     file_put_contents($this->tempDir . '/contact.html', 'contact');
     file_put_contents($this->tempDir . '/style.css', 'css');

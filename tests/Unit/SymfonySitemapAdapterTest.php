@@ -188,7 +188,7 @@ test('SymfonySitemapAdapter toResponse() aliases createResponse()', function () 
 test('SymfonySitemapAdapter scanRoutes() skips if router lacks getRouteCollection', function () {
     $adapter = new SymfonySitemapAdapter();
     $dummyRouter = new stdClass();
-    
+
     $adapter->scanRoutes($dummyRouter, 'https://example.com');
     expect($adapter->getSitemap()->getModel()->getItems())->toBeEmpty();
 });
