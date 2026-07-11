@@ -33,19 +33,19 @@ class DirectoryScanner
                 $ext = strtolower($file->getExtension());
                 if (in_array($ext, $extensions, true)) {
                     $path = $file->getPathname();
-                    
+
                     // Normalize path and remove base directory
                     $relativePath = str_replace($directoryPath, '', $path);
                     $relativePath = str_replace('\\', '/', $relativePath);
-                    
+
                     // Remove index.html or index.php
                     if (preg_match('#/index\.(html|php)$#i', $relativePath)) {
                         $relativePath = preg_replace('#/index\.(html|php)$#i', '/', $relativePath);
                     }
-                    
+
                     $url = $baseUrl . $relativePath;
                     $lastMod = date('c', $file->getMTime());
-                    
+
                     $sitemap->add(loc: $url, lastmod: $lastMod);
                 }
             }

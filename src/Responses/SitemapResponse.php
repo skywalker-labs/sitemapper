@@ -27,7 +27,7 @@ class SitemapResponse
         ?string $style = null
     ): ResponseInterface {
         $content = $sitemap->render($format, $style);
-        
+
         $isGzip = $sitemap->getConfig()?->isGzipEnabled() ?? false;
         if ($isGzip && $format === 'xml') {
             $compressed = gzencode($content, 9);

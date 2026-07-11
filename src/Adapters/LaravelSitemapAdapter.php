@@ -222,22 +222,22 @@ class LaravelSitemapAdapter
         foreach ($routes as $route) {
             if (in_array('GET', $route->methods(), true)) {
                 $uri = $route->uri();
-                
+
                 // Skip routes with parameters {param}
                 if (str_contains($uri, '{')) {
                     continue;
                 }
 
                 $url = $baseUrl . '/' . ltrim($uri, '/');
-                
+
                 if ($filter && !call_user_func($filter, $route, $url)) {
                     continue;
                 }
-                
+
                 $this->sitemap->add(loc: $url);
             }
         }
-        
+
         return $this;
     }
 }

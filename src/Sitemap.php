@@ -392,7 +392,7 @@ class Sitemap implements SitemapInterface
     {
         $items = $this->model->getItems();
         $chunkLimit = $this->config?->getChunkLimit() ?? 50000;
-        
+
         // Handle chunking if items exceed the limit
         if (count($items) > $chunkLimit && $format === 'xml') {
             return $this->storeChunks($items, $chunkLimit, $format, $filename, $path, $style);
@@ -449,26 +449,24 @@ class Sitemap implements SitemapInterface
         $chunks = array_chunk($items, $limit);
         $domain = $this->config?->getDomain() ?? 'http://localhost';
         $domain = rtrim($domain, '/');
-        
+
         // Backup original items
         $originalItems = $this->model->getItems();
         $originalSitemaps = $this->model->getSitemaps();
 
         $indexItems = [];
         $success = true;
-        
+
         $isGzip = $this->config?->isGzipEnabled() ?? false;
         $ext = $isGzip ? 'xml.gz' : 'xml';
 
         foreach ($chunks as $index => $chunk) {
             $chunkFilename = $filename . '-' . ($index + 1);
             $this->model->resetSitemaps();
-            
+
             // Swap items for this chunk
-            if (method_exists($this->model, 'resetItems')) {
-                $this->model->resetItems($chunk);
-            }
-            
+            $this->model->resetItems($chunk);
+
             $content = $this->render($format, $style);
             if ($isGzip) {
                 $compressed = gzencode($content, 9);
@@ -476,14 +474,14 @@ class Sitemap implements SitemapInterface
                     $content = $compressed;
                 }
             }
-            
+
             $directory = $path ?? getcwd();
             $fullPath = rtrim($directory, '/') . '/' . $chunkFilename . '.' . $ext;
-            
+
             if (file_put_contents($fullPath, $content) === false) {
                 $success = false;
             }
-            
+
             $indexItems[] = [
                 'loc' => $domain . '/' . $chunkFilename . '.' . $ext,
                 'lastmod' => date('c')
@@ -491,24 +489,20 @@ class Sitemap implements SitemapInterface
         }
 
         // Render sitemap index
-        if (method_exists($this->model, 'resetItems')) {
-            $this->model->resetItems([]);
-        }
+        $this->model->resetItems([]);
         $this->model->resetSitemaps($indexItems);
-        
+
         $indexContent = $this->render($format, $style);
         $indexFullPath = rtrim($path ?? getcwd(), '/') . '/' . $filename . '-index.xml';
-        
+
         if (file_put_contents($indexFullPath, $indexContent) === false) {
             $success = false;
         }
 
         // Restore original model state
-        if (method_exists($this->model, 'resetItems')) {
-            $this->model->resetItems($originalItems);
-        }
+        $this->model->resetItems($originalItems);
         $this->model->resetSitemaps($originalSitemaps);
-        
+
         return $success;
     }
 
@@ -534,7 +528,7 @@ class Sitemap implements SitemapInterface
                 $success = false;
             }
         }
-        
+
         return $success;
     }
 }

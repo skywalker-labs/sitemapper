@@ -5,22 +5,26 @@ use SkywalkerLabs\Sitemap\Config\SitemapConfig;
 use Psr\SimpleCache\CacheInterface;
 
 beforeEach(function () {
-    $this->tempDir = __DIR__ . '/../temp';
-    if (!is_dir($this->tempDir)) {
-        mkdir($this->tempDir, 0777, true);
+    $tempDir = __DIR__ . '/../temp';
+    if (!is_dir($tempDir)) {
+        mkdir($tempDir, 0777, true);
     }
 });
 
 afterEach(function () {
-    $files = glob($this->tempDir . '/*');
-    foreach ($files as $file) {
-        if (is_file($file)) {
-            unlink($file);
+    $tempDir = __DIR__ . '/../temp';
+    $files = glob($tempDir . '/*');
+    if ($files !== false) {
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                unlink($file);
+            }
         }
     }
 });
 
 test('sitemap chunking works correctly', function () {
+    $tempDir = __DIR__ . '/../temp';
     $config = new SitemapConfig(chunkLimit: 2);
     $sitemap = new Sitemap($config);
 
@@ -30,27 +34,28 @@ test('sitemap chunking works correctly', function () {
             ->add('/page4')
             ->add('/page5');
 
-    $sitemap->store('xml', 'test-sitemap', $this->tempDir);
+    $sitemap->store('xml', 'test-sitemap', $tempDir);
 
-    expect(file_exists($this->tempDir . '/test-sitemap-1.xml'))->toBeTrue();
-    expect(file_exists($this->tempDir . '/test-sitemap-2.xml'))->toBeTrue();
-    expect(file_exists($this->tempDir . '/test-sitemap-3.xml'))->toBeTrue();
-    expect(file_exists($this->tempDir . '/test-sitemap-index.xml'))->toBeTrue();
+    expect(file_exists($tempDir . '/test-sitemap-1.xml'))->toBeTrue();
+    expect(file_exists($tempDir . '/test-sitemap-2.xml'))->toBeTrue();
+    expect(file_exists($tempDir . '/test-sitemap-3.xml'))->toBeTrue();
+    expect(file_exists($tempDir . '/test-sitemap-index.xml'))->toBeTrue();
 
-    $indexContent = file_get_contents($this->tempDir . '/test-sitemap-index.xml');
+    $indexContent = file_get_contents($tempDir . '/test-sitemap-index.xml');
     expect($indexContent)->toContain('test-sitemap-1.xml');
     expect($indexContent)->toContain('test-sitemap-2.xml');
     expect($indexContent)->toContain('test-sitemap-3.xml');
 });
 
 test('sitemap gzip compression works', function () {
+    $tempDir = __DIR__ . '/../temp';
     $config = new SitemapConfig(useGzip: true);
     $sitemap = new Sitemap($config);
     $sitemap->add('/gzip-page');
 
-    $sitemap->store('xml', 'gzip-test', $this->tempDir);
+    $sitemap->store('xml', 'gzip-test', $tempDir);
 
-    $filePath = $this->tempDir . '/gzip-test.xml.gz';
+    $filePath = $tempDir . '/gzip-test.xml.gz';
     expect(file_exists($filePath))->toBeTrue();
 
     // Verify it is a valid gzip file
@@ -65,7 +70,8 @@ test('caching mechanism works', function () {
     $sitemap->add('/cached-page');
 
     $cache = new class implements CacheInterface {
-        public $data = [];
+        /** @var array<string, mixed> */
+        public array $data = [];
         public function get(string $key, mixed $default = null): mixed
         {
             return $this->data[$key] ?? $default;
@@ -85,10 +91,12 @@ test('caching mechanism works', function () {
             $this->data = [];
             return true;
         }
+        /** @return iterable<string, mixed> */
         public function getMultiple(iterable $keys, mixed $default = null): iterable
         {
             return [];
         }
+        /** @param iterable<string, mixed> $values */
         public function setMultiple(iterable $values, \DateInterval|int|null $ttl = null): bool
         {
             return true;
@@ -106,7 +114,7 @@ test('caching mechanism works', function () {
     $sitemap->setCache($cache);
 
     $output1 = $sitemap->render('xml');
-
+    
     // Add another item, but output should remain same due to cache
     $sitemap->add('/new-page');
     $output2 = $sitemap->render('xml');

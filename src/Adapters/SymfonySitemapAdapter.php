@@ -178,15 +178,15 @@ class SymfonySitemapAdapter
                 }
 
                 $url = $baseUrl . '/' . ltrim($path, '/');
-                
+
                 if ($filter && !call_user_func($filter, $route, $url)) {
                     continue;
                 }
-                
+
                 $this->sitemap->add(loc: $url);
             }
         }
-        
+
         return $this;
     }
 }
