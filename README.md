@@ -2,6 +2,8 @@
   <img src="assets/banner.png" alt="Sitemapper Banner" width="100%" height="360">
 </p>
 
+# Sitemapper
+
 [![CI](https://github.com/skywalker-labs/sitemapper/actions/workflows/ci.yml/badge.svg)](https://github.com/skywalker-labs/sitemapper/actions/workflows/ci.yml)
 [![Analyze](https://github.com/skywalker-labs/sitemapper/actions/workflows/analyze.yml/badge.svg)](https://github.com/skywalker-labs/sitemapper/actions/workflows/analyze.yml)
 [![Style](https://github.com/skywalker-labs/sitemapper/actions/workflows/style.yml/badge.svg)](https://github.com/skywalker-labs/sitemapper/actions/workflows/style.yml)
@@ -9,7 +11,7 @@
 [![Dependabot](https://github.com/skywalker-labs/sitemapper/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/skywalker-labs/sitemapper/actions/workflows/dependabot/dependabot-updates)
 [![codecov](https://codecov.io/gh/skywalker-labs/sitemapper/branch/master/graph/badge.svg)](https://codecov.io/gh/skywalker-labs/sitemapper)
 
-**Sitemapper** is a modern, framework-agnostic PHP package for generating sitemaps in XML, TXT, HTML, and Google News formats. It works seamlessly with Laravel, Symfony, or any PHP project. Features include high test coverage, robust CI, extensible adapters, and support for images, videos, translations, alternates, and Google News.
+> **Sitemapper** is a modern, framework-agnostic PHP package for generating sitemaps in XML, TXT, HTML, and Google News formats. It works seamlessly with Laravel, Symfony, or any PHP project. Features include high test coverage, robust CI, extensible adapters, and support for images, videos, translations, alternates, and Google News.
 
 ---
 
