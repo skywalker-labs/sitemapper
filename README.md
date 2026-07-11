@@ -2,8 +2,6 @@
   <img src="assets/banner.png" alt="Sitemapper Banner" width="100%" height="360">
 </p>
 
-# Sitemapper
-
 [![CI](https://github.com/skywalker-labs/sitemapper/actions/workflows/ci.yml/badge.svg)](https://github.com/skywalker-labs/sitemapper/actions/workflows/ci.yml)
 [![Analyze](https://github.com/skywalker-labs/sitemapper/actions/workflows/analyze.yml/badge.svg)](https://github.com/skywalker-labs/sitemapper/actions/workflows/analyze.yml)
 [![Style](https://github.com/skywalker-labs/sitemapper/actions/workflows/style.yml/badge.svg)](https://github.com/skywalker-labs/sitemapper/actions/workflows/style.yml)
@@ -87,7 +85,7 @@ No additional configuration required! The package works out of the box.
 
 **Controller method:**
 
-`php
+```php
 <?php
 use SkywalkerLabs\Sitemap\Sitemap;
 
@@ -107,14 +105,14 @@ public function sitemap(Sitemap $sitemap)
 
 **Route registration:**
 
-`php
+```php
 <?php
 Route::get('/sitemap.xml', [SitemapController::class, 'sitemap']);
 ```
 
 **Advanced:**
 
-`php
+```php
 <?php
 // Add with translations, videos, alternates, Google News
 $sitemap->add(
@@ -141,7 +139,7 @@ $sitemap->add(
 
 **Controller:**
 
-`php
+```php
 <?php
 use SkywalkerLabs\Sitemap\Sitemap;
 use Symfony\Component\HttpFoundation\Response;
@@ -175,7 +173,7 @@ sitemap:
 
 ### Generic PHP Example
 
-`php
+```php
 <?php
 require 'vendor/autoload.php';
 
@@ -200,7 +198,7 @@ echo $sitemap->renderXml();
 
 ### Advanced Features
 
-`php
+```php
 <?php
 // Add with all supported fields
 $sitemap->add(
@@ -237,7 +235,7 @@ You can add sitemap entries using either the `add()` or `addItem()` methods:
 
 **add() — Simple, type-safe, one-at-a-time:**
 
-`php
+```php
 <?php
 // Recommended for most use cases
 $sitemap->add(
@@ -252,7 +250,7 @@ $sitemap->add(
 
 **addItem() — Advanced, array-based, supports batch:**
 
-`php
+```php
 <?php
 // Add a single item with an array (all fields as keys)
 $sitemap->addItem([
@@ -288,7 +286,7 @@ $sitemap->addItem([
 
 Chain methods for more elegant and readable code:
 
-`php
+```php
 <?php
 $sitemap = (new Sitemap())
     ->add('https://example.com/', date('c'), '1.0', 'daily')
@@ -301,7 +299,7 @@ $sitemap = (new Sitemap())
 
 Configure sitemaps with a fluent, type-safe configuration class:
 
-`php
+```php
 <?php
 use SkywalkerLabs\Sitemap\Config\SitemapConfig;
 
@@ -318,7 +316,7 @@ $sitemap = new Sitemap($config);
 
 Enable strict mode to automatically validate all input:
 
-`php
+```php
 <?php
 $config = new SitemapConfig(strictMode: true);
 $sitemap = new Sitemap($config);
@@ -338,7 +336,7 @@ try {
 
 Render sitemaps in different formats:
 
-`php
+```php
 <?php
 $sitemap = new Sitemap();
 $sitemap->add('https://example.com/', date('c'), '1.0', 'daily');
@@ -364,7 +362,7 @@ The package provides multiple ways to generate sitemap output:
 
 ### 1. Built-in XML Renderer (Simple)
 
-`php
+```php
 <?php
 $sitemap = new Sitemap();
 $sitemap->add('https://example.com/', date('c'), '1.0', 'daily');
@@ -375,7 +373,7 @@ $xml = $sitemap->renderXml(); // Returns XML string
 
 For more control, use the included view templates or create your own:
 
-`php
+```php
 <?php
 $sitemap = new Sitemap();
 $sitemap->add('https://example.com/', date('c'), '1.0', 'daily');
