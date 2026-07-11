@@ -28,7 +28,7 @@ afterEach(function () {
 test('directory scanner finds files', function () {
     $sitemap = new Sitemap();
     $tempDir = __DIR__ . '/../temp_scan';
-    
+
     file_put_contents($tempDir . '/about.html', 'about');
     file_put_contents($tempDir . '/contact.html', 'contact');
     file_put_contents($tempDir . '/style.css', 'css');

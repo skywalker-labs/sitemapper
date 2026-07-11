@@ -114,7 +114,7 @@ test('caching mechanism works', function () {
     $sitemap->setCache($cache);
 
     $output1 = $sitemap->render('xml');
-    
+
     // Add another item, but output should remain same due to cache
     $sitemap->add('/new-page');
     $output2 = $sitemap->render('xml');
