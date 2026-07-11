@@ -18,6 +18,7 @@ updates:
       include: "scope"
 
 # Enable version updates for GitHub Actions
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
