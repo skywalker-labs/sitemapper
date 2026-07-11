@@ -1,8 +1,3 @@
----
-title: "License"
-description: "The MIT License for Sitemapper, a PHP package for generating sitemaps."
-keywords: "php, sitemap, seo, laravel, symfony, xml sitemap, generator, search engine optimization, license, mit"
----
 MIT License
 
 Copyright (c) Skywalker Labs <contact@skywalker-labs.com>

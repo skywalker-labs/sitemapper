@@ -1,10 +1,3 @@
----
-title: "Contributor Covenant Code of Conduct"
-description: "We as members, contributors, and leaders pledge to make participation in our"
-keywords: "php, sitemap, seo, laravel, symfony, xml sitemap, generator, search engine optimization"
----
-# Contributor Covenant Code of Conduct
-
 ## Our Pledge
 
 We as members, contributors, and leaders pledge to make participation in our

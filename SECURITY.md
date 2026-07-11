@@ -1,10 +1,3 @@
----
-title: "Security Policy for PHP & Laravel SEO"
-description: "We actively support the following versions of Sitemapper with security updates:"
-keywords: "php, sitemap, seo, laravel, symfony, xml sitemap, generator, search engine optimization"
----
-# Security Policy for PHP & Laravel SEO
-
 ## Supported Versions
 
 We actively support the following versions of Sitemapper with security updates:

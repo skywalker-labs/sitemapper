@@ -1,10 +1,3 @@
----
-title: "Funding for PHP & Laravel SEO"
-description: "Thank you for considering supporting the development of Sitemapper! Your support helps maintain and improve this open-source project."
-keywords: "php, sitemap, seo, laravel, symfony, xml sitemap, generator, search engine optimization"
----
-# Funding for PHP & Laravel SEO
-
 Thank you for considering supporting the development of Sitemapper! Your support helps maintain and improve this open-source project.
 
 ## Ways to Support

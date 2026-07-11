@@ -1,10 +1,3 @@
----
-title: "Contributing to Sitemapper for PHP & Laravel SEO"
-description: "Thank you for your interest in contributing to Sitemapper! We welcome contributions from the community and are grateful for any help you can provide."
-keywords: "php, sitemap, seo, laravel, symfony, xml sitemap, generator, search engine optimization"
----
-# Contributing to Sitemapper for PHP & Laravel SEO
-
 Thank you for your interest in contributing to Sitemapper! We welcome contributions from the community and are grateful for any help you can provide.
 
 ## Table of Contents
