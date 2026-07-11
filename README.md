@@ -1,7 +1,5 @@
-# Sitemapper package for PHP & Laravel SEO
-
 <p align="center">
-  <img src="assets/banner.png" alt="Sitemapper Banner" width="100%">
+  <img src="assets/banner.png" alt="Sitemapper Banner" width="100%" height="360">
 </p>
 
 [![CI](https://github.com/skywalker-labs/sitemapper/actions/workflows/ci.yml/badge.svg)](https://github.com/skywalker-labs/sitemapper/actions/workflows/ci.yml)
