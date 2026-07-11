@@ -365,3 +365,34 @@ test('LaravelSitemapAdapter cachedResponse() uses default content type for unkno
 
     expect($result->headers['Content-Type'])->toContain('application/xml'); // default
 });
+
+test('LaravelSitemapAdapter toResponse() aliases renderResponse()', function () {
+    $cache = new class implements \Illuminate\Contracts\Cache\Repository {};
+    $config = new class implements \Illuminate\Contracts\Config\Repository {};
+    $file = new class extends \Illuminate\Filesystem\Filesystem {};
+    $response = new class implements \Illuminate\Contracts\Routing\ResponseFactory {
+        public function make($content, $status = 200, array $headers = []) {
+            return (object) ['headers' => $headers];
+        }
+    };
+    $view = new class implements \Illuminate\Contracts\View\Factory {};
+
+    $adapter = new LaravelSitemapAdapter([], $cache, $config, $file, $response, $view);
+    $result = $adapter->toResponse('xml');
+
+    expect($result->headers['Content-Type'])->toContain('application/xml');
+});
+
+test('LaravelSitemapAdapter scanRoutes() skips if app not available', function () {
+    $cache = new class implements \Illuminate\Contracts\Cache\Repository {};
+    $config = new class implements \Illuminate\Contracts\Config\Repository {};
+    $file = new class extends \Illuminate\Filesystem\Filesystem {};
+    $response = new class implements \Illuminate\Contracts\Routing\ResponseFactory {};
+    $view = new class implements \Illuminate\Contracts\View\Factory {};
+
+    $adapter = new LaravelSitemapAdapter([], $cache, $config, $file, $response, $view);
+    
+    // Test passes if it does not throw
+    $adapter->scanRoutes('https://example.com');
+    expect($adapter->getSitemap()->getModel()->getItems())->toBeEmpty();
+});

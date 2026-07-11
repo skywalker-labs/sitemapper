@@ -31,6 +31,13 @@ class Sitemap implements SitemapInterface
     protected ?SitemapConfig $config = null;
 
     /**
+     * PSR-16 Cache instance.
+     *
+     * @var \Psr\SimpleCache\CacheInterface|null
+     */
+    protected ?\Psr\SimpleCache\CacheInterface $cache = null;
+
+    /**
      * Create a new Sitemap instance.
      *
      * @param array<string, mixed>|Model|SitemapConfig $configOrModel Optional configuration array, Model instance, or SitemapConfig.
@@ -69,6 +76,18 @@ class Sitemap implements SitemapInterface
     public function setConfig(SitemapConfig $config): self
     {
         $this->config = $config;
+        return $this;
+    }
+
+    /**
+     * Set the PSR-16 Cache instance.
+     *
+     * @param \Psr\SimpleCache\CacheInterface $cache
+     * @return self
+     */
+    public function setCache(\Psr\SimpleCache\CacheInterface $cache): self
+    {
+        $this->cache = $cache;
         return $this;
     }
 
@@ -260,6 +279,22 @@ class Sitemap implements SitemapInterface
     public function renderXml(): string
     {
         $items = $this->model->getItems();
+        $sitemaps = $this->model->getSitemaps();
+
+        // If no items but we have sitemaps, render a sitemap index
+        if (empty($items) && !empty($sitemaps)) {
+            $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></sitemapindex>');
+            foreach ($sitemaps as $sitemap) {
+                $sm = $xml->addChild('sitemap');
+                $sm->addChild('loc', $sitemap['loc'] ?? '/');
+                if (!empty($sitemap['lastmod'])) {
+                    $sm->addChild('lastmod', $sitemap['lastmod']);
+                }
+            }
+            $result = $xml->asXML();
+            return $result !== false ? $result : '';
+        }
+
         $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>');
         foreach ($items as $item) {
             $url = $xml->addChild('url');
@@ -298,23 +333,36 @@ class Sitemap implements SitemapInterface
      */
     public function render(string $format = 'xml', ?string $style = null): string
     {
+        $useCache = $this->config?->isCacheEnabled() ?? false;
+        $cacheKey = 'sitemap_render_' . $format . '_' . md5($style ?? '');
+
+        if ($useCache && $this->cache !== null && $this->cache->has($cacheKey)) {
+            return (string) $this->cache->get($cacheKey);
+        }
+
         if ($format === 'xml') {
-            return $this->renderXml();
+            $content = $this->renderXml();
+        } else {
+            // Use view files for other formats
+            $viewFile = __DIR__ . '/views/' . $format . '.php';
+            if (!file_exists($viewFile)) {
+                throw new \InvalidArgumentException("Unsupported format: {$format}");
+            }
+
+            $items = $this->model->getItems();
+            $sitemaps = $this->model->getSitemaps();
+            $channel = ['title' => '', 'link' => ''];
+
+            ob_start();
+            include $viewFile;
+            $content = ob_get_clean();
         }
 
-        // Use view files for other formats
-        $viewFile = __DIR__ . '/views/' . $format . '.php';
-        if (!file_exists($viewFile)) {
-            throw new \InvalidArgumentException("Unsupported format: {$format}");
+        if ($useCache && $this->cache !== null) {
+            $this->cache->set($cacheKey, $content, 3600); // Default 1 hour cache
         }
 
-        $items = $this->model->getItems();
-        $sitemaps = $this->model->getSitemaps();
-        $channel = ['title' => '', 'link' => ''];
-
-        ob_start();
-        include $viewFile;
-        return ob_get_clean();
+        return $content;
     }
 
     /**
@@ -342,7 +390,25 @@ class Sitemap implements SitemapInterface
      */
     public function store(string $format = 'xml', string $filename = 'sitemap', ?string $path = null, ?string $style = null): bool
     {
+        $items = $this->model->getItems();
+        $chunkLimit = $this->config?->getChunkLimit() ?? 50000;
+        
+        // Handle chunking if items exceed the limit
+        if (count($items) > $chunkLimit && $format === 'xml') {
+            return $this->storeChunks($items, $chunkLimit, $format, $filename, $path, $style);
+        }
+
         $content = $this->render($format, $style);
+
+        // Check if Gzip is enabled
+        $isGzip = $this->config?->isGzipEnabled() ?? false;
+        if ($isGzip && $format === 'xml') {
+            $compressed = gzencode($content, 9);
+            if ($compressed !== false) {
+                $content = $compressed;
+                $format = 'xml.gz';
+            }
+        }
 
         // Determine full path
         $directory = $path ?? getcwd();
@@ -365,5 +431,110 @@ class Sitemap implements SitemapInterface
         $result = file_put_contents($fullPath, $content);
 
         return $result !== false;
+    }
+
+    /**
+     * Store sitemap in chunks and generate an index.
+     *
+     * @param array<int, array<string, mixed>> $items
+     * @param int $limit
+     * @param string $format
+     * @param string $filename
+     * @param string|null $path
+     * @param string|null $style
+     * @return bool
+     */
+    protected function storeChunks(array $items, int $limit, string $format, string $filename, ?string $path, ?string $style): bool
+    {
+        $chunks = array_chunk($items, $limit);
+        $domain = $this->config?->getDomain() ?? 'http://localhost';
+        $domain = rtrim($domain, '/');
+        
+        // Backup original items
+        $originalItems = $this->model->getItems();
+        $originalSitemaps = $this->model->getSitemaps();
+
+        $indexItems = [];
+        $success = true;
+        
+        $isGzip = $this->config?->isGzipEnabled() ?? false;
+        $ext = $isGzip ? 'xml.gz' : 'xml';
+
+        foreach ($chunks as $index => $chunk) {
+            $chunkFilename = $filename . '-' . ($index + 1);
+            $this->model->resetSitemaps();
+            
+            // Swap items for this chunk
+            if (method_exists($this->model, 'resetItems')) {
+                $this->model->resetItems($chunk);
+            }
+            
+            $content = $this->render($format, $style);
+            if ($isGzip) {
+                $compressed = gzencode($content, 9);
+                if ($compressed !== false) {
+                    $content = $compressed;
+                }
+            }
+            
+            $directory = $path ?? getcwd();
+            $fullPath = rtrim($directory, '/') . '/' . $chunkFilename . '.' . $ext;
+            
+            if (file_put_contents($fullPath, $content) === false) {
+                $success = false;
+            }
+            
+            $indexItems[] = [
+                'loc' => $domain . '/' . $chunkFilename . '.' . $ext,
+                'lastmod' => date('c')
+            ];
+        }
+
+        // Render sitemap index
+        if (method_exists($this->model, 'resetItems')) {
+            $this->model->resetItems([]);
+        }
+        $this->model->resetSitemaps($indexItems);
+        
+        $indexContent = $this->render($format, $style);
+        $indexFullPath = rtrim($path ?? getcwd(), '/') . '/' . $filename . '-index.xml';
+        
+        if (file_put_contents($indexFullPath, $indexContent) === false) {
+            $success = false;
+        }
+
+        // Restore original model state
+        if (method_exists($this->model, 'resetItems')) {
+            $this->model->resetItems($originalItems);
+        }
+        $this->model->resetSitemaps($originalSitemaps);
+        
+        return $success;
+    }
+
+    /**
+     * Ping search engines to notify them of sitemap updates.
+     *
+     * @param string $sitemapUrl The full URL to the sitemap index or sitemap (e.g. https://example.com/sitemap.xml)
+     * @return bool True if all pings were successful, false otherwise.
+     */
+    public function ping(string $sitemapUrl): bool
+    {
+        $endpoints = [
+            'https://www.google.com/ping?sitemap=',
+            'https://www.bing.com/ping?sitemap='
+        ];
+
+        $success = true;
+        foreach ($endpoints as $endpoint) {
+            $url = $endpoint . urlencode($sitemapUrl);
+            $context = stream_context_create(['http' => ['method' => 'GET', 'timeout' => 5]]);
+            $result = @file_get_contents($url, false, $context);
+            if ($result === false) {
+                $success = false;
+            }
+        }
+        
+        return $success;
     }
 }

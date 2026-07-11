@@ -178,3 +178,17 @@ test('SymfonySitemapAdapter download() uses default content type for unknown for
     expect($response)->toBeInstanceOf(Response::class);
     expect($response->headers->get('Content-Type'))->toContain('application/xml'); // default
 });
+
+test('SymfonySitemapAdapter toResponse() aliases createResponse()', function () {
+    $adapter = new SymfonySitemapAdapter();
+    $response = $adapter->toResponse('xml');
+    expect($response->headers->get('Content-Type'))->toContain('application/xml');
+});
+
+test('SymfonySitemapAdapter scanRoutes() skips if router lacks getRouteCollection', function () {
+    $adapter = new SymfonySitemapAdapter();
+    $dummyRouter = new stdClass();
+    
+    $adapter->scanRoutes($dummyRouter, 'https://example.com');
+    expect($adapter->getSitemap()->getModel()->getItems())->toBeEmpty();
+});

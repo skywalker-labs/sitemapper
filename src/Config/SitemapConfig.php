@@ -34,7 +34,8 @@ class SitemapConfig
         private bool $useStyles = true,
         private ?string $domain = null,
         private bool $strictMode = false,
-        private string $defaultFormat = 'xml'
+        private string $defaultFormat = 'xml',
+        private int $chunkLimit = 50000
     ) {
         $this->validate();
     }
@@ -77,7 +78,8 @@ class SitemapConfig
             useStyles: $config['use_styles'] ?? true,
             domain: $config['domain'] ?? null,
             strictMode: $config['strict_mode'] ?? false,
-            defaultFormat: $config['default_format'] ?? 'xml'
+            defaultFormat: $config['default_format'] ?? 'xml',
+            chunkLimit: $config['chunk_limit'] ?? 50000
         );
     }
 
@@ -99,6 +101,7 @@ class SitemapConfig
             'domain' => $this->domain,
             'strict_mode' => $this->strictMode,
             'default_format' => $this->defaultFormat,
+            'chunk_limit' => $this->chunkLimit,
         ];
     }
 
@@ -278,6 +281,26 @@ class SitemapConfig
             throw new \InvalidArgumentException("Invalid default format: {$defaultFormat}");
         }
         $this->defaultFormat = $defaultFormat;
+        return $this;
+    }
+
+    /**
+     * Get the chunk limit.
+     */
+    public function getChunkLimit(): int
+    {
+        return $this->chunkLimit;
+    }
+
+    /**
+     * Set the chunk limit.
+     */
+    public function setChunkLimit(int $chunkLimit): self
+    {
+        if ($chunkLimit <= 0) {
+            throw new \InvalidArgumentException('chunkLimit must be greater than 0');
+        }
+        $this->chunkLimit = $chunkLimit;
         return $this;
     }
 }

@@ -194,4 +194,50 @@ class LaravelSitemapAdapter
             'Cache-Control' => 'public, max-age=' . ($minutes * 60),
         ]);
     }
+
+    /**
+     * Alias to renderResponse to match standardized interface.
+     */
+    public function toResponse(string $format = 'xml')
+    {
+        return $this->renderResponse($format);
+    }
+
+    /**
+     * Scan registered Laravel routes and add GET routes to the sitemap.
+     *
+     * @param string $baseUrl The base URL to prepend.
+     * @param callable|null $filter Optional filter callback.
+     * @return self
+     */
+    public function scanRoutes(string $baseUrl, ?callable $filter = null): self
+    {
+        if (!function_exists('app')) {
+            return $this;
+        }
+
+        $routes = app('router')->getRoutes();
+        $baseUrl = rtrim($baseUrl, '/');
+
+        foreach ($routes as $route) {
+            if (in_array('GET', $route->methods(), true)) {
+                $uri = $route->uri();
+                
+                // Skip routes with parameters {param}
+                if (str_contains($uri, '{')) {
+                    continue;
+                }
+
+                $url = $baseUrl . '/' . ltrim($uri, '/');
+                
+                if ($filter && !call_user_func($filter, $route, $url)) {
+                    continue;
+                }
+                
+                $this->sitemap->add(loc: $url);
+            }
+        }
+        
+        return $this;
+    }
 }

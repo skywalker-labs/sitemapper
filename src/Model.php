@@ -70,6 +70,17 @@ class Model
     }
 
     /**
+     * Reset the list of sitemap items.
+     *
+     * @param array<int, array<string, mixed>> $items Optional new list of items.
+     * @return void
+     */
+    public function resetItems(array $items = []): void
+    {
+        $this->items = $items;
+    }
+
+    /**
      * Add a sitemap index entry to the internal sitemaps array.
      *
      * @param array<string, mixed> $sitemap The sitemap index entry to add.

@@ -140,4 +140,53 @@ class SymfonySitemapAdapter
             'Cache-Control' => 'public, max-age=3600',
         ]);
     }
+
+    /**
+     * Alias for createResponse to standardize interface.
+     */
+    public function toResponse(string $format = 'xml'): Response
+    {
+        return $this->createResponse($format);
+    }
+
+    /**
+     * Scan Symfony routes and add GET routes to sitemap.
+     * Note: This requires passing the Symfony Router instance.
+     *
+     * @param mixed $router The Symfony router instance.
+     * @param string $baseUrl Base URL.
+     * @param callable|null $filter Optional filter callback.
+     * @return self
+     */
+    public function scanRoutes($router, string $baseUrl, ?callable $filter = null): self
+    {
+        if (!method_exists($router, 'getRouteCollection')) {
+            return $this;
+        }
+
+        $routes = $router->getRouteCollection();
+        $baseUrl = rtrim($baseUrl, '/');
+
+        foreach ($routes as $name => $route) {
+            $methods = $route->getMethods();
+            if (empty($methods) || in_array('GET', $methods, true)) {
+                $path = $route->getPath();
+
+                // Skip routes with parameters {param}
+                if (str_contains($path, '{')) {
+                    continue;
+                }
+
+                $url = $baseUrl . '/' . ltrim($path, '/');
+                
+                if ($filter && !call_user_func($filter, $route, $url)) {
+                    continue;
+                }
+                
+                $this->sitemap->add(loc: $url);
+            }
+        }
+        
+        return $this;
+    }
 }
